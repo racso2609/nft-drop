@@ -11,28 +11,30 @@ describe("Nft", () => {
 		userNotRegisterSigner = await ethers.provider.getSigner(userNotRegister);
 
 		// Deploy contracts
-		await fixture(["Nft"]);
-		nft = await ethers.getContractFactory("Nft");
+		Nft = await ethers.getContractFactory("Nft");
+		nft = await Nft.deploy();
 	});
 
 	describe("Creation", () => {
 		beforeEach(() => {
 			hash = "123";
+			name = "hola";
 		});
 		it("create succesfull", async () => {
-			const tx = await nft.mint(hash);
-			await printGas();
-			tx.wait();
+			const tx = await nft.mint(hash, name);
+			await printGas(tx);
 			const nftId = Number(tx.value);
-			const nft = await nft.nfts(nftId);
-			expect(nft.fileHash).to.be.equal(hash);
+			const newNft = await nft.nfts(nftId);
+			expect(newNft.fileHash).to.be.equal(hash);
+			expect(newNft.name).to.be.equal("hola");
 		});
 
 		it("fail hash already exist", async () => {
-			const tx = await nft.mint(hash);
+			const tx = await nft.mint(hash, name);
 			await printGas(tx);
-			tx.wait();
-			await expect(nft.mint(hash)).to.be.revertedWith("Hash already exist");
+			await expect(nft.mint(hash, name)).to.be.revertedWith(
+				"Hash already exist"
+			);
 		});
 	});
 });

@@ -6,20 +6,22 @@ contract Nft is ERC721 {
 
 	struct Nft {
 		string fileHash;
-		// string name;
+		string name;
 	}
 
-	mapping(uint256 => Nft) nfts;
+	mapping(uint256 => Nft) public nfts;
 	mapping(string => bool) existHash;
 	uint256 totalNft;
 
-	function mint(string calldata _fileHash) external {
+	function mint(string calldata _fileHash,string calldata _name) external returns(uint256){
 		require(!existHash[_fileHash], "Hash already exist");
 		_mint(msg.sender, totalNft);
 		Nft memory newNft;
 		newNft.fileHash = _fileHash;
+		newNft.name = _name;
 		nfts[totalNft] = newNft;
 		existHash[_fileHash] = true;
 		totalNft++;
+		return totalNft - 1;
 	}
 }
