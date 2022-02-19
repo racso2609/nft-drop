@@ -32,5 +32,11 @@ describe("NftDrop", () => {
 			expect(newDrop.duration).to.be.equal(duration);
 			expect(newDrop.hash).to.be.equal("");
 		});
+
+		it("event emmited", async () => {
+			await expect(drop.createDrop(hashesArray, dropName, duration))
+				.to.emit(drop, "CreateDrop")
+				.withArgs(0, duration);
+		});
 	});
 });
