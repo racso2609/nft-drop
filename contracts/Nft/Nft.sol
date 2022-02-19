@@ -10,10 +10,13 @@ contract Nft is ERC721 {
 	}
 
 	mapping(uint256 => Nft) public nfts;
-	mapping(string => bool) existHash;
+	mapping(string => bool) public existHash;
 	uint256 totalNft;
 
-	function mint(string calldata _fileHash,string calldata _name) external returns(uint256){
+	function mint(string calldata _fileHash, string calldata _name)
+		external
+		returns (uint256)
+	{
 		require(!existHash[_fileHash], "Hash already exist");
 		_mint(msg.sender, totalNft);
 		Nft memory newNft;

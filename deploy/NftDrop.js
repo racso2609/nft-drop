@@ -1,8 +1,5 @@
-const CONTRACT_NAME = "TokenSale";
-const { utils } = ethers;
-const { parseEther } = utils;
-const TOKEN_PRICE = parseEther("0.001"); // 0,001 in wei
-const TOKEN_ADDRESS = '';
+const CONTRACT_NAME = "NftDrop";
+const NFT_ADDRESS = '';
 
 // modify when needed
 module.exports = async ({ getNamedAccounts, deployments }) => {
@@ -17,7 +14,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 			execute: {
 				init: {
 					methodName: "constructor",
-					args: [TOKEN_ADDRESS,TOKEN_PRICE],
+					args: [NFT_ADDRESS],
 				},
 			},
 		},
