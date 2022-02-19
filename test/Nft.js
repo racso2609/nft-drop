@@ -12,7 +12,7 @@ describe("Nft", () => {
 
 		// Deploy contracts
 		await fixture(["Nft"]);
-		nft = await ethers.getContract("Nft");
+		nft = await ethers.getContractFactory("Nft");
 	});
 
 	describe("Creation", () => {

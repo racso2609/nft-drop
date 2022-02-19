@@ -11,10 +11,12 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 	await deploy(CONTRACT_NAME, {
 		from: deployer,
 		log: true,
-		execute: {
-			init: {
-				methodName: "constructor",
-				args: [INITIAL_SUPPLY],
+		proxy: {
+			execute: {
+				init: {
+					methodName: "constructor",
+					args: [INITIAL_SUPPLY],
+				},
 			},
 		},
 	});
