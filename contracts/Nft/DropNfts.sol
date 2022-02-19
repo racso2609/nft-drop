@@ -20,6 +20,7 @@ contract NftDrop {
 		uint256 initialPrice;
 		uint256 totalOffers;
 		Offer higgestOffer;
+		uint256 initialDate;
 	}
 	event CreateDrop(uint256 indexed dropId, uint256 indexed duration);
 
@@ -41,6 +42,7 @@ contract NftDrop {
 		newDrop.duration = _duration;
 		newDrop.name = _name;
 		newDrop.initialPrice = _initialPrice;
+		newDrop.initialDate = block.timestamp;
 		drops[totalDrops] = newDrop;
 		emit CreateDrop(totalDrops, _duration);
 
@@ -53,6 +55,10 @@ contract NftDrop {
 			_price > drops[_dropId].initialPrice &&
 				_price > drops[_dropId].higgestOffer.price,
 			"Your offer should be bigger than the actual price"
+		);
+		require(
+			block.timestamp < drops[_dropId].initialDate + drops[_dropId].duration,
+			"This drop is finished"
 		);
 		drops[_dropId].higgestOffer.owner = msg.sender;
 		drops[_dropId].higgestOffer.price = _price;

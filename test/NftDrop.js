@@ -1,6 +1,7 @@
 const { expect } = require("chai");
-const { fixture } = deployments;
+// const { fixture } = deployments;
 const { printGas } = require("../utils/transactions.js");
+const { increaseTime } = require("../utils/transactions.js");
 
 describe("NftDrop", () => {
 	beforeEach(async () => {
@@ -9,6 +10,7 @@ describe("NftDrop", () => {
 		nft = await Nft.deploy();
 		Drop = await ethers.getContractFactory("NftDrop");
 		drop = await Drop.deploy(nft.address);
+		duration = 60 * 10;
 	});
 	describe("Drop Creation", () => {
 		beforeEach(async () => {
@@ -76,9 +78,15 @@ describe("NftDrop", () => {
 
 		it("fail offer less than the higgest offer", async () => {
 			await drop.makeOffer(0, 11);
-			await printGas(tx);
 			await expect(drop.makeOffer(0, 11)).to.be.revertedWith(
 				"Your offer should be bigger than the actual price"
+			);
+		});
+
+		it("fail offer ended", async () => {
+			increaseTime(duration);
+			await expect(drop.makeOffer(0, 11)).to.be.revertedWith(
+				"This drop is finished"
 			);
 		});
 	});
