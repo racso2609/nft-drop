@@ -6,35 +6,42 @@ const { increaseTime } = require("../utils/transactions.js");
 describe("NftDrop", () => {
 	beforeEach(async () => {
 		({ deployer, user, userNotRegister } = await getNamedAccounts());
-		Nft = await ethers.getContractFactory("Nft");
-		nft = await Nft.deploy();
+		userSigner = await ethers.provider.getSigner(user);
+
+		// drop = await ethers.getContractFactory("Nft");
+		// drop = await Nft.deploy();
+
 		Drop = await ethers.getContractFactory("NftDrop");
-		drop = await Drop.deploy(nft.address);
+		drop = await Drop.deploy();
 		duration = 60 * 10;
+		cid = "QmUt9nNKwbdA1UKFfiqkfQnHhTQ3Gx69NveB3eCZhmnzR6";
+	});
+	describe("basic functions", () => {
+		it("pause contract", async () => {
+			await drop.pause();
+			const isPaused = drop.paused();
+			expect(isPaused);
+		});
+		it("unpause contract", async () => {
+			await drop.pause();
+			await drop.unpause();
+			const isPaused = drop.paused();
+			expect(!isPaused);
+		});
 	});
 	describe("Drop Creation", () => {
 		beforeEach(async () => {
-			hashesArray = ["111", "222"];
+			maxSupply = 5;
 			duration = 60 * 10;
 			dropName = "first drop";
 			initialPrice = 10;
-			await nft.mint("123", "hola");
 		});
 
-		it("fail creating, a hash exist like a nft", async () => {
-			await expect(
-				drop.createDrop(
-					[...hashesArray, "123"],
-					dropName,
-					duration,
-					initialPrice
-				)
-			).to.be.revertedWith("hash already exist");
-		});
 		it("create drop", async () => {
 			const tx = await drop.createDrop(
-				hashesArray,
+				maxSupply,
 				dropName,
+				cid,
 				duration,
 				initialPrice
 			);
@@ -43,13 +50,13 @@ describe("NftDrop", () => {
 			const newDrop = await drop.drops(dropId);
 			expect(newDrop.name).to.be.equal(dropName);
 			expect(newDrop.duration).to.be.equal(duration);
-			expect(newDrop.hash).to.be.equal("");
+			expect(newDrop.hash).to.be.equal(0);
 			expect(newDrop.initialPrice).to.be.equal(10);
 		});
 
 		it("event emmited", async () => {
 			await expect(
-				drop.createDrop(hashesArray, dropName, duration, initialPrice)
+				drop.createDrop(maxSupply, dropName, cid, duration, initialPrice)
 			)
 				.to.emit(drop, "CreateDrop")
 				.withArgs(0, duration);
@@ -57,10 +64,10 @@ describe("NftDrop", () => {
 	});
 	describe("make offers", () => {
 		beforeEach(async () => {
-			hashesArray = ["111", "222"];
+			maxSuply = 5;
 			duration = 60 * 10;
 			dropName = "first drop";
-			await drop.createDrop(hashesArray, dropName, duration, 10);
+			await drop.createDrop(maxSupply, dropName, cid, duration, 10);
 		});
 		it("fail offer are less than the initial price", async () => {
 			await expect(drop.makeOffer(0, 9)).to.be.revertedWith(
@@ -88,6 +95,48 @@ describe("NftDrop", () => {
 			await expect(drop.makeOffer(0, 11)).to.be.revertedWith(
 				"This drop is finished"
 			);
+		});
+	});
+	describe("define drop", () => {
+		beforeEach(async () => {
+			maxSupply = 5;
+			duration = 60 * 10;
+			dropName = "first drop";
+			initialPrice = 10;
+			await drop.createDrop(maxSupply, dropName, cid, duration, initialPrice);
+			await drop.connect(userSigner).makeOffer(0, 11);
+		});
+
+		it("fail drop does not finished", async () => {
+			await expect(drop.connect(userSigner).defineDrop(0)).to.be.revertedWith(
+				"Drop is not finished"
+			);
+		});
+		it("fail you are not the drop owner", async () => {
+			await expect(drop.defineDrop(0)).to.be.revertedWith(
+				"You are not the owner"
+			);
+		});
+		it("fail does not send ether", async () => {
+			increaseTime(duration + 60);
+			await expect(drop.connect(userSigner).defineDrop(0)).to.be.revertedWith(
+				"Insufficient funds!"
+			);
+		});
+
+		it("define drop", async () => {
+			increaseTime(duration + 60);
+			const tx = await drop.connect(userSigner).defineDrop(0, {
+				value: ethers.utils.parseEther("0.1"),
+			});
+			await printGas(tx);
+			const tokenId = tx.value;
+			const definedDrop = await drop.drops(0);
+			expect(maxSupply).to.be.gt(definedDrop.hash);
+			const nft = await drop.nfts(tokenId);
+			expect(maxSupply).to.be.gt(nft);
+			const balanceOf = await drop.balanceOf(user);
+			expect(balanceOf).to.be.eq(1);
 		});
 	});
 });

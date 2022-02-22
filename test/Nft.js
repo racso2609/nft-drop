@@ -17,24 +17,19 @@ describe("Nft", () => {
 
 	describe("Creation", () => {
 		beforeEach(() => {
-			hash = "123";
-			name = "hola";
-		});
-		it("create succesfull", async () => {
-			const tx = await nft.mint(hash, name);
-			await printGas(tx);
-			const nftId = Number(tx.value);
-			const newNft = await nft.nfts(nftId);
-			expect(newNft.fileHash).to.be.equal(hash);
-			expect(newNft.name).to.be.equal("hola");
+			hash = 1;
 		});
 
-		it("fail hash already exist", async () => {
-			const tx = await nft.mint(hash, name);
+		it("fail does not send ether", async () => {
+			await expect(nft.mint(hash)).to.be.revertedWith("Insufficient funds!");
+		});
+		it("create succesfull", async () => {
+			const tx = await nft.mint(hash, {
+				value: ethers.utils.parseEther("0.1"),
+			});
 			await printGas(tx);
-			await expect(nft.mint(hash, name)).to.be.revertedWith(
-				"Hash already exist"
-			);
+			const newNft = await nft.nfts(0);
+			expect(newNft).to.be.equal(hash);
 		});
 	});
 });

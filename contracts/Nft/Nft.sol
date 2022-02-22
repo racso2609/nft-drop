@@ -1,30 +1,90 @@
 pragma solidity ^0.8.7;
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 
-contract Nft is ERC721 {
-	constructor() ERC721("Racso", "RAC") {}
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
-	struct Nft {
-		string fileHash;
-		string name;
+contract Nft is ERC721Pausable, ERC721Burnable, AccessControl {
+	bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+	bytes32 public constant PAUSABLE_ROLE = keccak256("PAUSABLE_ROLE");
+
+	mapping(uint256 => uint256) public nfts;
+	uint256 totalNft;
+	modifier onlyAdmin() {
+		require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "You are not an admin");
+		_;
 	}
 
-	mapping(uint256 => Nft) public nfts;
-	mapping(string => bool) public existHash;
-	uint256 totalNft;
+	modifier onlyPausable() {
+		require(hasRole(PAUSABLE_ROLE, msg.sender), "You are not an admin");
+		_;
+	}
 
-	function mint(string calldata _fileHash, string calldata _name)
-		external
+	modifier onlyAdminAndMinters() {
+		require(
+			hasRole(DEFAULT_ADMIN_ROLE, msg.sender) ||
+				hasRole(MINTER_ROLE, msg.sender),
+			"You are not an admin or a minter"
+		);
+		_;
+	}
+
+	constructor() ERC721("Racso", "RAC") {
+		_setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+		_setupRole(MINTER_ROLE, msg.sender);
+		_setupRole(PAUSABLE_ROLE, msg.sender);
+	}
+
+	function supportsInterface(bytes4 interfaceId)
+		public
+		view
+		virtual
+		override(AccessControl,ERC721)
+		returns (bool)
+	{
+		return super.supportsInterface(interfaceId);
+	}
+
+	function pause() external onlyPausable {
+		_pause();
+	}
+
+	function unpause() external onlyPausable {
+		_unpause();
+	}
+
+	/**
+	 * override(ERC721, ERC721Enumerable, ERC721Pausable)
+	 * here you're overriding _beforeTokenTransfer method of
+	 * three Base classes namely ERC721, ERC721Enumerable, ERC721Pausable
+	 * */
+	function _beforeTokenTransfer(
+		address from,
+		address to,
+		uint256 tokenId
+	) internal override(ERC721, ERC721Pausable) {
+		super._beforeTokenTransfer(from, to, tokenId);
+	}
+
+	function createNft(uint256 _fileHash)
+		internal
+		whenNotPaused
 		returns (uint256)
 	{
-		require(!existHash[_fileHash], "Hash already exist");
 		_mint(msg.sender, totalNft);
-		Nft memory newNft;
-		newNft.fileHash = _fileHash;
-		newNft.name = _name;
-		nfts[totalNft] = newNft;
-		existHash[_fileHash] = true;
+		nfts[totalNft] = _fileHash;
 		totalNft++;
 		return totalNft - 1;
+	}
+
+	function mint(uint256 _fileHash)
+		external
+		payable
+		whenNotPaused
+		onlyAdminAndMinters
+		returns (uint256)
+	{
+		require(msg.value >= 0.1 ether, "Insufficient funds!");
+		return createNft(_fileHash);
 	}
 }
