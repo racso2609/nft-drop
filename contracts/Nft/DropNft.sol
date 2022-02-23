@@ -45,14 +45,12 @@ contract Drop is Nft {
 
 	function mint(uint256 _mintAmount)
 		public
-		payable
 		whenNotPaused
 		mintValidator(_mintAmount)
 		isDropNotFinished
 		isValidTimeToMint
 	{
-		require(msg.value >= price * _mintAmount, "Insufficient funds!");
-
+        require(tokenContract.transferFrom(msg.sender, address(this), price * _mintAmount));
 		_mintLoop(msg.sender, _mintAmount);
 	}
 }

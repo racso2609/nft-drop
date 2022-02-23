@@ -2,6 +2,8 @@ pragma solidity ^0.8.7;
 import "./Token.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
+
 
 contract TokenSale is Ownable {
 	using SafeMath for uint256;
@@ -18,7 +20,8 @@ contract TokenSale is Ownable {
 
 	function buyTokens(uint256 _numberOfTokens) external payable {
 		// Require that value is equal to tokens
-		require(msg.value == _numberOfTokens.mul(tokenPrice), "wrong eth amount");
+		console.log(msg.value,_numberOfTokens.mul(tokenPrice));
+		require(msg.value >= _numberOfTokens.mul(tokenPrice), "wrong eth amount");
 
 		// Require that the contract have enought tokens
 		require(
