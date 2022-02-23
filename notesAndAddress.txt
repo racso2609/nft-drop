@@ -1,0 +1,5 @@
+Drop address: 0x4fD0F9653aB2457a237f4207b4DF73CA34e8eC0f         //nft drop
+Token address: 0xb052bcD57453606937d70706a9C9f0bee9da64a8       //racso token contract
+Token Sale address: 0x47423CA72a83199ddF4B908c299a9030bA4e477f  //Buy racso token with rth
+
+Note: i dont be able to show my image on opensea but if we check the tokenURI its return the correct json and you can see se image with the propety image of the json file 

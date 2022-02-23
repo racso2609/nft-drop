@@ -22,6 +22,9 @@ contract Nft is ERC721Pausable, ERC721Burnable, AccessControl,Ownable {
 	uint256 public maxMintPerTx = 5;
 
 	uint256 public totalNft;
+  function totalSupply() external returns(uint256){
+    return maxSupply; 
+  }
 	bool public revealed = false;
 
 	modifier mintValidator(uint256 _mintAmount) {
@@ -59,10 +62,10 @@ contract Nft is ERC721Pausable, ERC721Burnable, AccessControl,Ownable {
 		_setupRole(MINTER_ROLE, msg.sender);
 		_setupRole(PAUSABLE_ROLE, msg.sender);
 		setHiddenMetadataUri(
-			"ipfs://QmUt9nNKwbdA1UKFfiqkfQnHhTQ3Gx69NveB3eCZhmnzR6/hidden.json"
+			"ipfs://QmUt9nNKwbdA1UKFfiqkfQnHhTQ3Gx69NveB3eCZhmnzR6/images/hidden.json"
 		);
 		setUriPrefix(
-			"ipfs://QmUt9nNKwbdA1UKFfiqkfQnHhTQ3Gx69NveB3eCZhmnzR6/"
+			"ipfs://QmUt9nNKwbdA1UKFfiqkfQnHhTQ3Gx69NveB3eCZhmnzR6/images/"
 		);
 	}
 

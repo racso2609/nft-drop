@@ -1,5 +1,5 @@
 const CONTRACT_NAME = "Token";
-const { utils } = ethers;
+const { utils, BigNumber } = ethers;
 const { parseEther } = utils;
 const TOTAL_SUPPLY = BigNumber.from("1000000000000000");
 
