@@ -11,8 +11,8 @@ const TOKENS_AVALIABLE = 750_000;
 describe("Token Sale", () => {
   beforeEach(async () => {
     Token = await ethers.getContractFactory("Token");
-    TokenSale = await ethers.getContractFactory("TokenSale");
     tokenInstance = await Token.deploy(TOTAL_SUPPLY);
+    TokenSale = await ethers.getContractFactory("TokenSale");
     tokenSaleInstance = await TokenSale.deploy(
       tokenInstance.address,
       parseEther(TOKEN_PRICE)

@@ -1,6 +1,5 @@
-const CONTRACT_NAME = "NftDrop";
-const NFT_ADDRESS = '';
-
+const CONTRACT_NAME = "Nft";
+const CONTRACT_ADDRESS = '';
 // modify when needed
 module.exports = async ({ getNamedAccounts, deployments }) => {
 	const { deploy } = deployments;
@@ -14,7 +13,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 			execute: {
 				init: {
 					methodName: "constructor",
-					args: [NFT_ADDRESS],
+					args:[CONTRACT_ADDRESS]
 				},
 			},
 		},
