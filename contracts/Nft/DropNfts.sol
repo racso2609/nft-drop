@@ -7,6 +7,8 @@ contract NftDrop is Nft {
 	uint256 totalDrops;
 	uint256 constant MINT_PRICE = 0.01 ether;
 	uint256 constant TAX_PORCENTAGE = 10;
+	uint256 public balance;
+
 
 	struct Drop {
 		string name;
@@ -21,8 +23,8 @@ contract NftDrop is Nft {
 		string hiddenURI;
 		uint256 totalNft;
 		uint256 maxMintPerTx;
-		uint256 balance;
 	}
+  mapping(uint256=>uint256) public dropsBalance;
 	mapping(uint256 => Drop) public drops;
 
 	modifier mintValidator(uint256 _mintAmount, uint256 _dropId) {
@@ -80,11 +82,11 @@ contract NftDrop is Nft {
 
 	function createDrop(
 		uint256 _maxSupply,
-		string memory _name,
-		string memory _cid,
-		string memory _prefix,
-		string memory _sufix,
-		string memory _hiddenURI,
+		string calldata _name,
+		string calldata _cid,
+		string calldata _prefix,
+		string calldata _sufix,
+		string calldata _hiddenURI,
 		uint256 _maxPerTx
 	) external whenNotPaused returns (uint256) {
 		Drop memory newDrop;
@@ -114,8 +116,8 @@ contract NftDrop is Nft {
 		uint256 tax = msg.value.mul(TAX_PORCENTAGE).div(100);
 		_mintLoop(msg.sender, _mintAmount);
 		drops[_dropId].totalNft += _mintAmount;
-		drops[_dropId].balance += msg.value.sub(tax);
-    balance += tax;
+		dropsBalance[_dropId]+= msg.value.sub(tax);
+		balance += tax;
 	}
 
 	function defineDrop(uint256 _dropId)
@@ -130,16 +132,15 @@ contract NftDrop is Nft {
 
 	function withdrawDrop(uint256 _dropId) external onlyDropOwner(_dropId) {
 		(bool os, ) = payable(drops[_dropId].owner).call{
-			value: drops[_dropId].balance
+			value: dropsBalance[_dropId]
 		}("");
 		require(os);
-		drops[_dropId].balance = 0;
+		dropsBalance[_dropId]= 0;
+
 	}
 
-	function withdrawOwner(uint256 _dropId) external onlyOwner{
-		(bool os, ) = payable(owner()).call{
-			value: balance
-		}("");
+	function withdrawOwner(uint256 _dropId) external onlyOwner {
+		(bool os, ) = payable(owner()).call{ value: balance }("");
 		require(os);
 		balance = 0;
 	}

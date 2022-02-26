@@ -3,8 +3,9 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import  "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Nft is ERC721Pausable, ERC721Burnable, AccessControl {
+contract Nft is ERC721Pausable, ERC721Burnable, AccessControl, Ownable {
 	bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 	bytes32 public constant PAUSABLE_ROLE = keccak256("PAUSABLE_ROLE");
 
