@@ -4,38 +4,44 @@ import "./Nft.sol";
 contract NftDrop is Nft {
 	uint256 totalDrops;
 
-	struct Offer {
-		uint256 price;
-		address owner;
-	}
-
 	struct Drop {
-		uint256 duration;
 		string name;
 		uint256 hash;
 		address owner;
 		uint256 nftId;
-		uint256 initialPrice;
-		uint256 totalOffers;
-		Offer higgestOffer;
-		uint256 initialDate;
 		uint256 maxSupply;
 		string cid;
+		string prefix;
+		string sufix;
+    bool revealed;   
+    string hiddenURI;   
+    uint256 totalNft;
+    uint256 maxMintPerTx;
+      
 	}
 	mapping(uint256 => Drop) public drops;
 	event CreateDrop(uint256 indexed dropId, uint256 indexed duration);
+  
+  modifier mintValidator(uint256 _mintAmount,uint256 _dropId) {
+		require(
+			_mintAmount > 0 && _mintAmount <= drops[_dropId].maxMintPerTx,
+			"Invalid mint amount!"
+		);
+		require(drops[_dropId].totalNft + _mintAmount <= drops[_dropId].maxSupply, "Max supply exceeded!");
+		_;
+	}
 
-	function _baseURI()
+	function _baseURI(uint256 _dropId)
 		internal
 		view
 		virtual
 		override(ERC721)
 		returns (string memory)
 	{
-		return "https://ipfs.io/ipfs/";
+		return drops[dropId].prefix;
 	}
 
-	function tokenURI(uint256 tokenId, uint256 _dropId)
+	function tokenURI(uint256 _tokenId, uint256 _dropId)
 		public
 		view
 		virtual
@@ -45,6 +51,10 @@ contract NftDrop is Nft {
 			_exists(tokenId),
 			"ERC721Metadata: URI query for nonexistent token"
 		);
+    if (drops[_dropId].revealed) {
+
+			return drops[_dropId].hiddenURI;
+		}
 
 		string memory baseURI = _baseURI();
 		return
@@ -53,9 +63,8 @@ contract NftDrop is Nft {
 					abi.encodePacked(
 						baseURI,
 						drops[_dropId].cid,
-						"?filename=",
-						nfts[tokenId],
-						".jpg"
+						_tokenId,
+						drops[_tokenId].sufix
 					)
 				)
 				: "";
@@ -66,16 +75,19 @@ contract NftDrop is Nft {
 		string calldata _name,
 		string calldata _cid,
 		uint256 _duration,
-		uint256 _initialPrice
+		string calldata _prefix,
+		string calldata _sufix,
+		string calldata _hiddenURI,
+
 	) external onlyAdminAndMinters whenNotPaused returns (uint256) {
 		Drop memory newDrop;
 		newDrop.maxSupply = _maxSupply;
-		newDrop.duration = _duration;
 		newDrop.name = _name;
 		newDrop.cid = _cid;
-		newDrop.initialPrice = _initialPrice;
-		newDrop.initialDate = block.timestamp;
 		newDrop.owner = msg.sender;
+		newDrop.prefix = _prefix;
+		newDrop.sufix = _sufix;
+		newDrop.hiddenURI = _hiddenURI;
 		drops[totalDrops] = newDrop;
 		emit CreateDrop(totalDrops, _duration);
 
@@ -83,28 +95,12 @@ contract NftDrop is Nft {
 		return totalDrops - 1;
 	}
 
-	function makeOffer(uint256 _dropId, uint256 _price) external whenNotPaused {
-		require(
-			_price > drops[_dropId].initialPrice &&
-				_price > drops[_dropId].higgestOffer.price,
-			"Your offer should be bigger than the actual price"
-		);
-		require(
-			block.timestamp < drops[_dropId].initialDate + drops[_dropId].duration,
-			"This drop is finished"
-		);
-		drops[_dropId].higgestOffer.owner = msg.sender;
-		drops[_dropId].higgestOffer.price = _price;
+	function mint(uint256 _dropId, uint256 _mintAmont) external minValidator(_mintAmount,_dropId) whenNotPaused {
+		
+    require()
+    _mintLoop(msg.sender,_mintAmont)
 	}
 
-	function random(uint256 maxLenght) private view returns (uint256) {
-		return
-			uint256(
-				keccak256(
-					abi.encodePacked(block.difficulty, block.timestamp, maxLenght)
-				)
-			) % maxLenght;
-	}
 
 	function defineDrop(uint256 _dropId)
 		external
@@ -116,15 +112,6 @@ contract NftDrop is Nft {
 			msg.sender == drops[_dropId].higgestOffer.owner,
 			"You are not the owner"
 		);
-		require(
-			block.timestamp > drops[_dropId].initialDate + drops[_dropId].duration,
-			"Drop is not finished"
-		);
-		require(msg.value >= 0.1 ether, "Insufficient funds!");
-		uint256 randomNum = random(drops[_dropId].maxSupply);
-		drops[_dropId].hash = randomNum;
-		uint256 nftId = createNft(randomNum);
-		drops[_dropId].nftId = nftId;
-		return nftId;
+
 	}
 }

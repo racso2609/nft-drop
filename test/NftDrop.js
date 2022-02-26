@@ -15,6 +15,9 @@ describe("NftDrop", () => {
 		drop = await Drop.deploy();
 		duration = 60 * 10;
 		cid = "QmUt9nNKwbdA1UKFfiqkfQnHhTQ3Gx69NveB3eCZhmnzR6";
+		prefix = "ipfs://";
+		sufix = ".json";
+    hiddenURI = prefix + cid + "hidden" + sufix;
 	});
 	describe("basic functions", () => {
 		it("pause contract", async () => {
@@ -34,7 +37,6 @@ describe("NftDrop", () => {
 			maxSupply = 5;
 			duration = 60 * 10;
 			dropName = "first drop";
-			initialPrice = 10;
 		});
 
 		it("create drop", async () => {
@@ -43,7 +45,9 @@ describe("NftDrop", () => {
 				dropName,
 				cid,
 				duration,
-				initialPrice
+				prefix,
+				sufix,
+        hiddenURI
 			);
 			await printGas(tx);
 			const dropId = Number(tx.value);
@@ -51,59 +55,84 @@ describe("NftDrop", () => {
 			expect(newDrop.name).to.be.equal(dropName);
 			expect(newDrop.duration).to.be.equal(duration);
 			expect(newDrop.hash).to.be.equal(0);
-			expect(newDrop.initialPrice).to.be.equal(10);
+			expect(newDrop.prefix).to.be.equal(prefix);
+			expect(newDrop.sufix).to.be.equal(sufix);
 		});
 
 		it("event emmited", async () => {
 			await expect(
-				drop.createDrop(maxSupply, dropName, cid, duration, initialPrice)
+				drop.createDrop(
+					maxSupply,
+					dropName,
+					cid,
+					duration,
+					prefix,
+          sufix,
+          hiddenURI
+				)
 			)
 				.to.emit(drop, "CreateDrop")
 				.withArgs(0, duration);
 		});
 	});
-	describe("make offers", () => {
-		beforeEach(async () => {
-			maxSuply = 5;
-			duration = 60 * 10;
-			dropName = "first drop";
-			await drop.createDrop(maxSupply, dropName, cid, duration, 10);
-		});
-		it("fail offer are less than the initial price", async () => {
-			await expect(drop.makeOffer(0, 9)).to.be.revertedWith(
-				"Your offer should be bigger than the actual price"
-			);
-		});
-
-		it("create offer", async () => {
-			const tx = await drop.makeOffer(0, 11);
-			await printGas(tx);
-			const actualDrop = await drop.drops(0);
-			expect(actualDrop.higgestOffer.owner).to.be.equal(deployer);
-			expect(actualDrop.higgestOffer.price).to.be.equal(11);
-		});
-
-		it("fail offer less than the higgest offer", async () => {
-			await drop.makeOffer(0, 11);
-			await expect(drop.makeOffer(0, 11)).to.be.revertedWith(
-				"Your offer should be bigger than the actual price"
-			);
-		});
-
-		it("fail offer ended", async () => {
-			increaseTime(duration);
-			await expect(drop.makeOffer(0, 11)).to.be.revertedWith(
-				"This drop is finished"
-			);
-		});
-	});
+//	describe("make offers", () => {
+//		beforeEach(async () => {
+//			maxSuply = 5;
+//			duration = 60 * 10;
+//			dropName = "first drop";
+//			await drop.createDrop(
+//				maxSupply,
+//				dropName,
+//				cid,
+//				duration,
+//				prefix,
+//        sufix,
+//        hiddenURI
+//			);
+//		});
+//		it("fail offer are less than the initial price", async () => {
+//			await expect(drop.makeOffer(0, 9)).to.be.revertedWith(
+//				"Your offer should be bigger than the actual price"
+//			);
+//		});
+//
+//		it("create offer", async () => {
+//			const tx = await drop.makeOffer(0, 11);
+//			await printGas(tx);
+//			const actualDrop = await drop.drops(0);
+//			expect(actualDrop.higgestOffer.owner).to.be.equal(deployer);
+//			expect(actualDrop.higgestOffer.price).to.be.equal(11);
+//		});
+//
+//		it("fail offer less than the higgest offer", async () => {
+//			await drop.makeOffer(0, 11);
+//			await expect(drop.makeOffer(0, 11)).to.be.revertedWith(
+//				"Your offer should be bigger than the actual price"
+//			);
+//		});
+//
+//		it("fail offer ended", async () => {
+//			increaseTime(duration);
+//			await expect(drop.makeOffer(0, 11)).to.be.revertedWith(
+//				"This drop is finished"
+//			);
+//		});
+//	});
 	describe("define drop", () => {
 		beforeEach(async () => {
 			maxSupply = 5;
 			duration = 60 * 10;
 			dropName = "first drop";
 			initialPrice = 10;
-			await drop.createDrop(maxSupply, dropName, cid, duration, initialPrice);
+			await drop.createDrop(
+				maxSupply,
+				dropName,
+				cid,
+				duration,
+				prefix,
+        sufix,
+        hiddenURI
+			);
 			await drop.connect(userSigner).makeOffer(0, 11);
 		});
 
@@ -117,13 +146,6 @@ describe("NftDrop", () => {
 				"You are not the owner"
 			);
 		});
-		it("fail does not send ether", async () => {
-			increaseTime(duration + 60);
-			await expect(drop.connect(userSigner).defineDrop(0)).to.be.revertedWith(
-				"Insufficient funds!"
-			);
-		});
-
 		it("define drop", async () => {
 			increaseTime(duration + 60);
 			const tx = await drop.connect(userSigner).defineDrop(0, {

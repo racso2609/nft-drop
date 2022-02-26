@@ -76,15 +76,11 @@ contract Nft is ERC721Pausable, ERC721Burnable, AccessControl {
 		totalNft++;
 		return totalNft - 1;
 	}
-
-	function mint(uint256 _fileHash)
-		external
-		payable
-		whenNotPaused
-		onlyAdminAndMinters
-		returns (uint256)
-	{
-		require(msg.value >= 0.1 ether, "Insufficient funds!");
-		return createNft(_fileHash);
+  function _mintLoop(address _minter, uint256 _mintAmount) internal {
+		for (uint256 i = 0; i < _mintAmount; i++) {
+			totalNft++;
+			_safeMint(_minter, totalNft);
+		}
 	}
+
 }
