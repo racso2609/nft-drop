@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract NftDrop is Nft {
 	using SafeMath for uint256;
 	uint256 totalDrops;
+	uint256 constant MINT_PRICE = 0.01 ether;
+	uint256 constant TAX_PORCENTAGE = 10;
 
 	struct Drop {
 		string name;
@@ -19,9 +21,9 @@ contract NftDrop is Nft {
 		string hiddenURI;
 		uint256 totalNft;
 		uint256 maxMintPerTx;
+		uint256 balance;
 	}
 	mapping(uint256 => Drop) public drops;
-	event CreateDrop(uint256 indexed dropId, string indexed name);
 
 	modifier mintValidator(uint256 _mintAmount, uint256 _dropId) {
 		require(
@@ -32,6 +34,10 @@ contract NftDrop is Nft {
 			drops[_dropId].totalNft + _mintAmount <= drops[_dropId].maxSupply,
 			"Max supply exceeded!"
 		);
+		_;
+	}
+	modifier onlyDropOwner(uint256 _dropId) {
+		require(msg.sender == drops[_dropId].owner, "You are not the owner");
 		_;
 	}
 
@@ -74,13 +80,13 @@ contract NftDrop is Nft {
 
 	function createDrop(
 		uint256 _maxSupply,
-		string calldata _name,
-		string calldata _cid,
-		string calldata _prefix,
-		string calldata _sufix,
-		string calldata _hiddenURI,
+		string memory _name,
+		string memory _cid,
+		string memory _prefix,
+		string memory _sufix,
+		string memory _hiddenURI,
 		uint256 _maxPerTx
-	) external onlyAdminAndMinters whenNotPaused returns (uint256) {
+	) external whenNotPaused returns (uint256) {
 		Drop memory newDrop;
 		newDrop.maxSupply = _maxSupply;
 		newDrop.name = _name;
@@ -103,18 +109,28 @@ contract NftDrop is Nft {
 		mintValidator(_mintAmount, _dropId)
 		whenNotPaused
 	{
-		require(msg.value >= _mintAmount.mul(0.01 ether), "Invalid eth amount!");
+		require(msg.value >= _mintAmount.mul(MINT_PRICE), "Invalid eth amount!");
+
+		uint256 tax = msg.value.mul(TAX_PORCENTAGE).div(100);
 		_mintLoop(msg.sender, _mintAmount);
 		drops[_dropId].totalNft += _mintAmount;
+		drops[_dropId].balance += msg.value.sub(tax);
 	}
 
 	function defineDrop(uint256 _dropId)
 		external
 		payable
 		whenNotPaused
+		onlyDropOwner(_dropId)
 		returns (uint256)
 	{
-		require(msg.sender == drops[_dropId].owner, "You are not the owner");
 		drops[_dropId].revealed = true;
+	}
+
+	function withdrawDrop(uint256 _dropId) external onlyDropOwner(_dropId) {
+		(bool os, ) = payable(drops[_dropId].owner).call{
+			value: drops[_dropId].balance
+		}("");
+		require(os);
 	}
 }

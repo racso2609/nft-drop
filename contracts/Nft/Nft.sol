@@ -9,6 +9,7 @@ contract Nft is ERC721Pausable, ERC721Burnable, AccessControl {
 	bytes32 public constant PAUSABLE_ROLE = keccak256("PAUSABLE_ROLE");
 
 	uint256 totalNft;
+
 	modifier onlyAdmin() {
 		require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "You are not an admin");
 		_;
@@ -28,6 +29,8 @@ contract Nft is ERC721Pausable, ERC721Burnable, AccessControl {
 		_;
 	}
 
+	event CreateDrop(uint256 indexed dropId, string indexed name);
+
 	constructor() ERC721("Racso", "RAC") {
 		_setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
 		_setupRole(MINTER_ROLE, msg.sender);
@@ -38,7 +41,7 @@ contract Nft is ERC721Pausable, ERC721Burnable, AccessControl {
 		public
 		view
 		virtual
-		override(AccessControl,ERC721)
+		override(AccessControl, ERC721)
 		returns (bool)
 	{
 		return super.supportsInterface(interfaceId);
@@ -65,11 +68,10 @@ contract Nft is ERC721Pausable, ERC721Burnable, AccessControl {
 		super._beforeTokenTransfer(from, to, tokenId);
 	}
 
-  function _mintLoop(address _minter, uint256 _mintAmount) internal {
+	function _mintLoop(address _minter, uint256 _mintAmount) internal {
 		for (uint256 i = 0; i < _mintAmount; i++) {
 			totalNft++;
 			_safeMint(_minter, totalNft);
 		}
 	}
-
 }
