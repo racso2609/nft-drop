@@ -103,8 +103,11 @@ describe("NftDrop", () => {
 				.connect(userSigner)
 				.mint(0, 1, { value: parseEther("0.01") });
 			await printGas(tx);
+      const taxRate = parseEther("0.01").sub(parseEther('0.001'));
 			const newDrop = await drop.drops(0);
 			expect(newDrop.totalNft).to.be.eq(1);
+			expect(newDrop.balance).to.be.eq(taxRate);
+			expect(drop.balance).to.be.eq(parseEther('0.001'));
 		});
 
 		it("fail Max supply exceeded!", async () => {

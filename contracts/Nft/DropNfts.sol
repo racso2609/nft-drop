@@ -115,6 +115,7 @@ contract NftDrop is Nft {
 		_mintLoop(msg.sender, _mintAmount);
 		drops[_dropId].totalNft += _mintAmount;
 		drops[_dropId].balance += msg.value.sub(tax);
+    balance += tax;
 	}
 
 	function defineDrop(uint256 _dropId)
@@ -132,5 +133,14 @@ contract NftDrop is Nft {
 			value: drops[_dropId].balance
 		}("");
 		require(os);
+		drops[_dropId].balance = 0;
+	}
+
+	function withdrawOwner(uint256 _dropId) external onlyOwner{
+		(bool os, ) = payable(owner()).call{
+			value: balance
+		}("");
+		require(os);
+		balance = 0;
 	}
 }
