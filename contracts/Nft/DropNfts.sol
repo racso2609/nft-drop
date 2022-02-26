@@ -1,7 +1,9 @@
 pragma solidity ^0.8.7;
 import "./Nft.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract NftDrop is Nft {
+	using SafeMath for uint256;
 	uint256 totalDrops;
 
 	struct Drop {
@@ -13,21 +15,23 @@ contract NftDrop is Nft {
 		string cid;
 		string prefix;
 		string sufix;
-    bool revealed;   
-    string hiddenURI;   
-    uint256 totalNft;
-    uint256 maxMintPerTx;
-      
+		bool revealed;
+		string hiddenURI;
+		uint256 totalNft;
+		uint256 maxMintPerTx;
 	}
 	mapping(uint256 => Drop) public drops;
 	event CreateDrop(uint256 indexed dropId, string indexed name);
-  
-  modifier mintValidator(uint256 _mintAmount,uint256 _dropId) {
+
+	modifier mintValidator(uint256 _mintAmount, uint256 _dropId) {
 		require(
 			_mintAmount > 0 && _mintAmount <= drops[_dropId].maxMintPerTx,
 			"Invalid mint amount!"
 		);
-		require(drops[_dropId].totalNft + _mintAmount <= drops[_dropId].maxSupply, "Max supply exceeded!");
+		require(
+			drops[_dropId].totalNft + _mintAmount <= drops[_dropId].maxSupply,
+			"Max supply exceeded!"
+		);
 		_;
 	}
 
@@ -50,8 +54,7 @@ contract NftDrop is Nft {
 			_exists(_tokenId),
 			"ERC721Metadata: URI query for nonexistent token"
 		);
-    if (drops[_dropId].revealed) {
-
+		if (drops[_dropId].revealed) {
 			return drops[_dropId].hiddenURI;
 		}
 
@@ -77,7 +80,6 @@ contract NftDrop is Nft {
 		string calldata _sufix,
 		string calldata _hiddenURI,
 		uint256 _maxPerTx
-
 	) external onlyAdminAndMinters whenNotPaused returns (uint256) {
 		Drop memory newDrop;
 		newDrop.maxSupply = _maxSupply;
@@ -89,19 +91,22 @@ contract NftDrop is Nft {
 		newDrop.hiddenURI = _hiddenURI;
 		newDrop.maxMintPerTx = _maxPerTx;
 		drops[totalDrops] = newDrop;
-		emit CreateDrop(totalDrops,_name);
+		emit CreateDrop(totalDrops, _name);
 
 		totalDrops++;
 		return totalDrops - 1;
 	}
 
-	function mint(uint256 _dropId, uint256 _mintAmount) payable external mintValidator(_mintAmount,_dropId) whenNotPaused {
-
-		
-    require(msg.value >= 0.01 ether,"Invalid eth amount!");
-    _mintLoop(msg.sender,_mintAmount);
+	function mint(uint256 _dropId, uint256 _mintAmount)
+		external
+		payable
+		mintValidator(_mintAmount, _dropId)
+		whenNotPaused
+	{
+		require(msg.value >= _mintAmount.mul(0.01 ether), "Invalid eth amount!");
+		_mintLoop(msg.sender, _mintAmount);
+		drops[_dropId].totalNft += _mintAmount;
 	}
-
 
 	function defineDrop(uint256 _dropId)
 		external
@@ -109,10 +114,7 @@ contract NftDrop is Nft {
 		whenNotPaused
 		returns (uint256)
 	{
-		require(
-			msg.sender == drops[_dropId].owner,
-			"You are not the owner"
-		);
-
+		require(msg.sender == drops[_dropId].owner, "You are not the owner");
+		drops[_dropId].revealed = true;
 	}
 }
