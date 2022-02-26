@@ -20,7 +20,7 @@ contract NftDrop is Nft {
       
 	}
 	mapping(uint256 => Drop) public drops;
-	event CreateDrop(uint256 indexed dropId, uint256 indexed duration);
+	event CreateDrop(uint256 indexed dropId, string indexed name);
   
   modifier mintValidator(uint256 _mintAmount,uint256 _dropId) {
 		require(
@@ -35,10 +35,9 @@ contract NftDrop is Nft {
 		internal
 		view
 		virtual
-		override(ERC721)
 		returns (string memory)
 	{
-		return drops[dropId].prefix;
+		return drops[_dropId].prefix;
 	}
 
 	function tokenURI(uint256 _tokenId, uint256 _dropId)
@@ -48,7 +47,7 @@ contract NftDrop is Nft {
 		returns (string memory)
 	{
 		require(
-			_exists(tokenId),
+			_exists(_tokenId),
 			"ERC721Metadata: URI query for nonexistent token"
 		);
     if (drops[_dropId].revealed) {
@@ -74,10 +73,10 @@ contract NftDrop is Nft {
 		uint256 _maxSupply,
 		string calldata _name,
 		string calldata _cid,
-		uint256 _duration,
 		string calldata _prefix,
 		string calldata _sufix,
 		string calldata _hiddenURI,
+		uint256 _maxPerTx
 
 	) external onlyAdminAndMinters whenNotPaused returns (uint256) {
 		Drop memory newDrop;
@@ -88,17 +87,19 @@ contract NftDrop is Nft {
 		newDrop.prefix = _prefix;
 		newDrop.sufix = _sufix;
 		newDrop.hiddenURI = _hiddenURI;
+		newDrop.maxMintPerTx = _maxPerTx;
 		drops[totalDrops] = newDrop;
-		emit CreateDrop(totalDrops, _duration);
+		emit CreateDrop(totalDrops,_name);
 
 		totalDrops++;
 		return totalDrops - 1;
 	}
 
-	function mint(uint256 _dropId, uint256 _mintAmont) external minValidator(_mintAmount,_dropId) whenNotPaused {
+	function mint(uint256 _dropId, uint256 _mintAmount) payable external mintValidator(_mintAmount,_dropId) whenNotPaused {
+
 		
-    require()
-    _mintLoop(msg.sender,_mintAmont)
+    require(msg.value >= 0.01 ether,"Invalid eth amount!");
+    _mintLoop(msg.sender,_mintAmount);
 	}
 
 
@@ -109,7 +110,7 @@ contract NftDrop is Nft {
 		returns (uint256)
 	{
 		require(
-			msg.sender == drops[_dropId].higgestOffer.owner,
+			msg.sender == drops[_dropId].owner,
 			"You are not the owner"
 		);
 

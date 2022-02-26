@@ -8,7 +8,6 @@ contract Nft is ERC721Pausable, ERC721Burnable, AccessControl {
 	bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 	bytes32 public constant PAUSABLE_ROLE = keccak256("PAUSABLE_ROLE");
 
-	mapping(uint256 => uint256) public nfts;
 	uint256 totalNft;
 	modifier onlyAdmin() {
 		require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "You are not an admin");
@@ -66,16 +65,6 @@ contract Nft is ERC721Pausable, ERC721Burnable, AccessControl {
 		super._beforeTokenTransfer(from, to, tokenId);
 	}
 
-	function createNft(uint256 _fileHash)
-		internal
-		whenNotPaused
-		returns (uint256)
-	{
-		_mint(msg.sender, totalNft);
-		nfts[totalNft] = _fileHash;
-		totalNft++;
-		return totalNft - 1;
-	}
   function _mintLoop(address _minter, uint256 _mintAmount) internal {
 		for (uint256 i = 0; i < _mintAmount; i++) {
 			totalNft++;
