@@ -1,0 +1,21 @@
+# Token drop
+
+This contract use reacso token to make a nft drop
+
+## Usage
+
+``` js
+//to install dependencies
+yarn add 
+//to run test 
+yarn test
+// to get your own deployments
+yarn deploy
+
+```
+
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+

@@ -7,13 +7,15 @@ const TOKEN_PRICE = parseEther("0.001"); // 0,001 in wei
 module.exports = async ({ getNamedAccounts, deployments }) => {
 	const { deploy } = deployments;
 	const { deployer } = await getNamedAccounts();
+  const Token = deployments.get("Token")
 
 	// Upgradeable Proxy
 	await deploy(CONTRACT_NAME, {
 		from: deployer,
 		log: true,
-		args: [TOKEN_PRICE],
+		args: [Token.address,TOKEN_PRICE],
 	});
 };
 
 module.exports.tags = [CONTRACT_NAME];
+module.exports.dependencies = ['Token'];
