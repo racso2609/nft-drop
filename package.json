@@ -5,7 +5,7 @@
     "lint": "prettier --list-different 'contracts/**/*.sol'",
     "test": "npx hardhat test",
     "compile": "npmx hardhat compile",
-    "deploy": "node ./deploy/index.js"
+    "deploy": "hardhat deploy"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",

@@ -1,5 +1,4 @@
 const CONTRACT_NAME = "Nft";
-const CONTRACT_ADDRESS = '';
 // modify when needed
 module.exports = async ({ getNamedAccounts, deployments }) => {
 	const { deploy } = deployments;
@@ -9,14 +8,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 	await deploy(CONTRACT_NAME, {
 		from: deployer,
 		log: true,
-		proxy: {
-			execute: {
-				init: {
-					methodName: "constructor",
-					args:[CONTRACT_ADDRESS]
-				},
-			},
-		},
 	});
 };
 

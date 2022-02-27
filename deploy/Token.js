@@ -1,7 +1,7 @@
 const CONTRACT_NAME = "Token";
 const { utils, BigNumber } = ethers;
 const { parseEther } = utils;
-const TOTAL_SUPPLY = BigNumber.from("1000000000000000");
+const TOTAL_SUPPLY = BigNumber.from("1000000000000000000");
 
 // modify when needed
 module.exports = async ({ getNamedAccounts, deployments }) => {
@@ -12,14 +12,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 	await deploy(CONTRACT_NAME, {
 		from: deployer,
 		log: true,
-		proxy: {
-			execute: {
-				init: {
-					methodName: "constructor",
-					args: [TOTAL_SUPPLY],
-				},
-			},
-		},
+		args: [TOTAL_SUPPLY],
 	});
 };
 
