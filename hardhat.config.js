@@ -9,6 +9,7 @@ require("@nomiclabs/hardhat-waffle");
 require("hardhat-deploy");
 require("solidity-coverage");
 require("hardhat-gas-reporter");
+require("hardhat-deploy-ethers");
 require("chai");
 
 let mnemonic = process.env.MNEMONIC

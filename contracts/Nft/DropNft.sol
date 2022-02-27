@@ -1,5 +1,6 @@
 pragma solidity ^0.8.7;
 import "./Nft.sol";
+import "../Token.sol";
 
 contract Drop is Nft {
 	Token public tokenContract;

@@ -19,7 +19,6 @@ contract TokenSale is Ownable {
 
 	function buyTokens(uint256 _numberOfTokens) external payable {
 		// Require that value is equal to tokens
-		console.log(msg.value,_numberOfTokens.mul(tokenPrice));
 		require(msg.value >= _numberOfTokens.mul(tokenPrice), "wrong eth amount");
 
 		// Require that the contract have enought tokens

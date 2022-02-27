@@ -1,7 +1,6 @@
 const CONTRACT_NAME = "Token";
-const { utils, BigNumber } = ethers;
-const { parseEther } = utils;
-const TOTAL_SUPPLY = BigNumber.from("1000000000000000000");
+const { utils } = ethers;
+const TOTAL_SUPPLY = utils.parseEther('100');
 
 // modify when needed
 module.exports = async ({ getNamedAccounts, deployments }) => {

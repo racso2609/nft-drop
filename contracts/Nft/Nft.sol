@@ -5,8 +5,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../Token.sol";
-
 contract Nft is ERC721Pausable, ERC721Burnable, AccessControl,Ownable {
 	bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 	bytes32 public constant PAUSABLE_ROLE = keccak256("PAUSABLE_ROLE");
@@ -61,12 +59,6 @@ contract Nft is ERC721Pausable, ERC721Burnable, AccessControl,Ownable {
 		_setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
 		_setupRole(MINTER_ROLE, msg.sender);
 		_setupRole(PAUSABLE_ROLE, msg.sender);
-		setHiddenMetadataUri(
-			"ipfs://QmUt9nNKwbdA1UKFfiqkfQnHhTQ3Gx69NveB3eCZhmnzR6/images/hidden.json"
-		);
-		setUriPrefix(
-			"ipfs://QmUt9nNKwbdA1UKFfiqkfQnHhTQ3Gx69NveB3eCZhmnzR6/images/"
-		);
 	}
 
 	function _baseURI() internal view virtual override returns (string memory) {
