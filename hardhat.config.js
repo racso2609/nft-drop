@@ -42,6 +42,7 @@ module.exports = {
   },
   namedAccounts: {
     deployer: 0,
+    owner: "0x5a46AB557E9F579A02Cc4C40e51990e6aC7164e1",
     feeRecipient: 1,
     user: 2,
     userNotRegister: 3,
