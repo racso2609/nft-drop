@@ -3,7 +3,6 @@ import "./Token.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-
 contract TokenSale is Ownable {
 	using SafeMath for uint256;
 	Token public tokenContract;
