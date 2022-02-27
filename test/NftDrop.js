@@ -109,7 +109,7 @@ describe("NftDrop", () => {
 
       const dropBalance = await drop.dropsBalance(0);
 
-			expect(dropBalance.to.be.eq(taxRate);
+			expect(dropBalance).to.be.eq(taxRate);
 			expect(await drop.balance()).to.be.eq(parseEther('0.001'));
 		});
 
