@@ -4,7 +4,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract NftDrop is Nft {
 	using SafeMath for uint256;
-	uint256 totalDrops;
+	uint256 public totalDrops;
 	uint256 constant MINT_PRICE = 0.01 ether;
 	uint256 constant TAX_PORCENTAGE = 10;
 	uint256 public balance;
